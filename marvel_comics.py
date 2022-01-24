@@ -21,8 +21,6 @@ headers={"Content-Type": "application/json"},
 timeout=10,
 data={})
 
-# r.status_code
-
 res = r.json()
 
 for comic in res['data']['results']:
