@@ -1,4 +1,5 @@
 # To interact with APIs RESTs
+from urllib import response
 from requests import request
 import json
 from pprint import pprint
@@ -6,13 +7,15 @@ from hashlib import md5
 from datetime import datetime
 from dotenv import load_dotenv
 import os # To get the env. variables from the operating system.
+import pandas as pd
+
 load_dotenv() # We want to load the .env file.
 
 ts = int(datetime.now().timestamp())
 
 hash_code = md5(str.encode(f'{ts}' + os.environ['PUBLIC_KEY'] + os.environ['PRIVATE_KEY'], 'utf-8')).hexdigest()
 
-p = {'ts': ts, 'apikey': os.environ['PRIVATE_KEY'], 'hash': hash_code, 'dateRange': '2013-01-01,2013-12-31', 'limit': 100} # URL Params.
+p = {'ts': ts, 'apikey': os.environ['PRIVATE_KEY'], 'hash': hash_code, 'dateRange': '2013-01-01,2013-12-31', 'limit': 15} # URL Params.
 
 r = request(method='GET',
 url='https://gateway.marvel.com:443/v1/public/comics', # This is an endpoint.
@@ -23,16 +26,14 @@ data={})
 
 res = r.json()
 
+response_list = []
+
 for comic in res['data']['results']:
-    print(comic['id'])
+    response_list.append(comic)
 
-    print(comic['title'])
+# Ref.: https://pandas.pydata.org/docs/getting_started/intro_tutorials/03_subset_data.html#
 
-    for date in comic['dates']:
-        if date['type'] == 'onsaleDate':
-            print(date['date'])
+df = pd.DataFrame.from_dict(response_list)
+df_columns = df[['id', 'title', 'creators', 'dates', 'prices', 'stories', 'pageCount', 'events']]
 
-    for creator in comic['creators']['items']:
-        print(creator['name'])
-
-    print('')
+pprint(df_columns)
